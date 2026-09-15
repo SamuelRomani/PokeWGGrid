@@ -1,0 +1,45 @@
+{
+  "name": "pokewggrid",
+  "version": "1.0.0",
+  "description": "Rode 2 contas de um jogo idle ao mesmo tempo, em uma janela so / Run 2 idle-game accounts at once, in a single window",
+  "main": "main.js",
+  "author": "soufoka",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/boot.test.js",
+    "dist:win": "electron-builder --win portable"
+  },
+  "keywords": [
+    "electron",
+    "multi-account",
+    "idle-game",
+    "browser-game"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^43.1.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.pokewggrid.app",
+    "productName": "PokeWGGrid",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "tray.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ]
+    },
+    "portable": {
+      "artifactName": "PokeWGGrid-Portable.exe"
+    }
+  }
+}

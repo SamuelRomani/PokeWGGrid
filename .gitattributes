@@ -1,0 +1,5 @@
+# Arquivo .bat do Windows PRECISA ser CRLF. Um checkout com LF puro faz o cmd.exe
+# perder o parser em erros sem sentido tipo ". foi inesperado neste momento." -- foi
+# exatamente o bug que corrigimos no atualizar.bat. Isso trava essa terminação de
+# linha na hora do checkout, independente do autocrlf de quem clonar o repositório.
+*.bat text eol=crlf

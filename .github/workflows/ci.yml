@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: node --check main.js
+      - run: npm test
+
+  build-windows:
+    name: Build Windows portable
+    runs-on: ubuntu-latest
+    needs: test
+    # Só a release precisa de permissão de escrita (criar/atualizar a tag "latest" e o asset).
+    # PR continua só compilando, pra pegar regressão de empacotamento sem publicar nada.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx electron-builder --win portable
+      # Só publica em push direto no main (nunca em PR), com o mesmo nome de arquivo sempre --
+      # é isso que dá ao updater do app uma URL fixa pra baixar sem precisar saber a versão.
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Build automático (${{ github.sha }})"
+          body: "Gerado automaticamente a cada push no main. Não é uma versão fixa no sentido tradicional -- é sempre o código mais recente do repositório, empacotado."
+          prerelease: true
+          files: dist/*.exe
