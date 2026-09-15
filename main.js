@@ -99,14 +99,22 @@ app.on('web-contents-created', (_e, contents) => {
   contents.on('destroyed', () => clearTimeout(hangTimer));
   // Esc com o jogo focado: avisa a interface (fechar card de IV / desexpandir) SEM consumir a
   // tecla, o jogo usa Esc pra fechar dialogos. Por isso nao e um accelerator de menu, que engoliria.
+  // Tambem rastreia se o Ctrl esta pressionado: e o unico jeito de saber isso na hora do clique
+  // direito, porque o evento 'context-menu' do Electron nao informa quais teclas modificadoras
+  // estavam seguradas (so 'before-input-event', que e so pra teclado, avisa).
+  let ctrlPressionado = false;
   contents.on('before-input-event', (_ev, input) => {
+    if (input.key === 'Control') ctrlPressionado = input.type === 'keyDown';
     if (input.type === 'keyDown' && input.key === 'Escape' && !input.isAutoRepeat) {
       try { contents.hostWebContents && contents.hostWebContents.send('hotkey', 'collapse'); } catch {}
     }
   });
-  // clique direito no jogo: modo foco (expande/volta). Campo editavel fica de fora,
-  // senao o clique de colar num input viraria tela cheia.
+  // Ctrl + clique direito no jogo: modo foco (expande/volta). Clique direito sozinho passa
+  // direto pro jogo, sem interceptar -- e o que sobra pra acoes do proprio jogo que tambem usam
+  // botao direito (pedido de usuario: uma acao do jogo precisava do direito puro). Campo editavel
+  // fica de fora do foco tambem, senao colar com o direito num input viraria tela cheia.
   contents.on('context-menu', (_ev, params) => {
+    if (!ctrlPressionado) return;
     if (params && params.isEditable) return;
     try { contents.hostWebContents && contents.hostWebContents.send('hotkey', 'ctx' + contents.id); } catch {}
   });
